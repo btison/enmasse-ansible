@@ -1,0 +1,45 @@
+---
+
+- name: get enmasse restapi route
+  shell: "{{ openshift_cli }} get route restapi -o json -n {{ project_name }}"
+  register: restapi_route
+  changed_when: false
+
+- name: wait for address-controller to be up
+  uri:
+    url: https://{{ restapi_route.stdout|from_json|json_query('spec.host') }}
+    validate_certs: false
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 10
+  delay: 30
+
+- name: check if address-space configmap already exists
+  shell: "{{ openshift_cli}} get configmap address-space-{{ address_space_name }} -n {{ project_name }}"
+  register: install_address_space_configmap
+  ignore_errors: true
+  changed_when: false
+
+- name: create address-space definition from template
+  template: src={{item}} dest={{ enmasse_tmp_dir }}/address-space-{{ address_space_name }}.json
+  with_items:
+    - address-space.json
+
+- name: create address-space
+  shell: "{{ openshift_cli}} create -f {{ enmasse_tmp_dir}}/address-space-{{ address_space_name }}.json -n {{ project_name}}"
+  when: install_address_space_configmap | failed
+
+- name: copy enmasse-keycloak-client.jar to {{ enmasse_tmp_dir }}
+  copy: src=enmasse_keycloak_client/{{ enmasse_keycloak_client }} dest={{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }}
+  changed_when: false
+
+- name: check if keycloak realm for address-space {{ address_space_name }} exists
+  shell: java -jar {{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }} -n {{ project_name }} -o check-realm -r {{ address_space_name }}
+  when: address_space_auth_type == 'standard'
+  changed_when: false
+
+- name: create user in keycloak realm {{ address_space_name }}
+  shell: java -jar {{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }} -n {{ project_name }} -o create-user -r {{ address_space_name }} -u {{ item.name }} -p {{ item.password }}
+  with_items: "{{ address_space_users }}"
+  when: address_space_auth_type == 'standard'

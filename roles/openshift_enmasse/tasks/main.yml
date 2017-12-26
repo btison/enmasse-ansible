@@ -152,40 +152,8 @@
   when: install_enmasse_template | failed
 
 # address-space
-- name: get enmasse restapi route
-  shell: "{{ openshift_cli }} get route restapi -o json -n {{ project_name }}"
-  register: restapi_route
-  changed_when: false
-
-- name: wait for address-controller to be up
-  uri:
-    url: https://{{ restapi_route.stdout|from_json|json_query('spec.host') }}
-    validate_certs: false
-    status_code: 200
-  register: result
-  until: result.status == 200
-  retries: 10
-  delay: 30
+- import_tasks: create_address_space.yml
   when: create_address_space is defined and create_address_space|bool == true
-
-- name: check if address-space configmap already exists
-  shell: "{{ openshift_cli}} get configmap address-space-{{ address_space_name }} -n {{ project_name }}"
-  register: install_address_space_configmap
-  ignore_errors: true
-  changed_when: false
-  when: create_address_space is defined and create_address_space|bool == true
-
-- name: create address-space definition from template
-  template: src={{item}} dest={{ enmasse_tmp_dir }}/address-space-{{ address_space_name }}.json
-  with_items:
-    - address-space.json
-  when: create_address_space is defined and create_address_space|bool == true
-
-- name: create address-space
-  shell: "{{ openshift_cli}} create -f {{ enmasse_tmp_dir}}/address-space-{{ address_space_name }}.json -n {{ project_name}}"
-  when: >
-    (install_address_space_configmap | failed) and
-    (create_address_space is defined and create_address_space|bool == true)
 
 # create address
 - name: create address definition from template
