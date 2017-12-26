@@ -156,15 +156,5 @@
   when: create_address_space is defined and create_address_space|bool == true
 
 # create address
-- name: create address definition from template
-  template: src={{item}} dest={{ enmasse_tmp_dir }}/address-{{ address_name }}.json
-  with_items:
-    - address.json
-  when: create_address is defined and create_address|bool == true
-
-- name: create address
-  shell: |
-    curl -X POST -T {{ enmasse_tmp_dir}}/address-{{ address_name }}.json -H "content-type: application/json" \
-    -H "Authorization: Bearer {{ openshift_user_token }}" -k \
-    https://$(oc get route restapi -o jsonpath='{.spec.host}' -n {{ project_name }})/apis/enmasse.io/v1/addresses/{{ address_space_name }}
+- import_tasks: create_address.yml
   when: create_address is defined and create_address|bool == true

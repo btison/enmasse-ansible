@@ -1,0 +1,20 @@
+---
+
+# create address
+- name: create address definitions from template
+  template: src=address.json dest={{ enmasse_tmp_dir }}/address-{{ item.name }}.json
+  with_items:
+    - "{{ address_names }}"
+
+- name: get enmasse restapi route
+  shell: "{{ openshift_cli }} get route restapi -o json -n {{ project_name }}"
+  register: restapi_route
+  changed_when: false
+
+- name: create address
+  shell: |
+    curl -X POST -T {{ enmasse_tmp_dir}}/address-{{ item.name }}.json -H "content-type: application/json" \
+    -H "Authorization: Bearer {{ openshift_user_token }}" -k \
+    https://$(oc get route restapi -o jsonpath='{.spec.host}' -n {{ project_name }})/apis/enmasse.io/v1/addresses/{{ address_space_name }}
+  with_items:
+    - "{{ address_names }}"

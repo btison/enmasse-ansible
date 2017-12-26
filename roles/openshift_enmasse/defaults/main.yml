@@ -18,11 +18,16 @@ standard_authservice_keycloak_admin_password: admin
 enmasse_keycloak_client: enmasse-keycloak-client.jar
 
 create_address_space: false
-address_space_name: brokered-default-0
 address_space_namespace: "{{ project_name }}"
+# brokered,standard
 address_space_type: brokered
-address_space_auth_type: none
+# none.standard
+address_space_auth_type: standard 
+address_space_name: "{{ address_space_type }}-default"
 
-address_space_users: [{ name: user1, password: user},{ name: user2, password: user}]
+# Example: [{ name: user1, password: user},{ name: user2, password: user}]
+address_space_users: [{ name: user1, password: user}]
 
 create_address: false
+# Example: [{"name":"queue1","type":"queue"},{"name":"queue2","type":"queue"}]
+address_names: [{name: queue-jms-sb, type: queue}]

@@ -4,12 +4,12 @@
   "items": [
     {
       "metadata": {
-        "name": "{{ address_name }}",
+        "name": "{{ item.name }}",
         "addressSpace": "{{ address_space_name }}"
       },
       "spec": {
-      	"address": "{{ address_name }}",
-        "type": "{{ address_type }}"
+      	"address": "{{ item.name }}",
+        "type": "{{ item.type }}"
       }
     }
   ]
