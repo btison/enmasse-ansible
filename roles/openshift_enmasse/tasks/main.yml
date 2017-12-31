@@ -15,11 +15,11 @@
   shell: "{{ openshift_cli }} create sa enmasse-admin -n {{ project_name }}"
   when: install_address_controller_service_account | failed
 
-- name: give cluster view rights to default user
+- name: give project view rights to default user
   shell: "{{ openshift_cli }} adm policy add-role-to-user view system:serviceaccount:{{ project_name }}:default -n {{ project_name}}"
   ignore_errors: true
 
-- name: give cluster edit rights to enmasse-admin service account
+- name: give project edit rights to enmasse-admin service account
   shell: "{{ openshift_cli }} adm policy add-role-to-user edit system:serviceaccount:{{ project_name }}:enmasse-admin -n {{ project_name}}"
   ignore_errors: true
 
@@ -33,7 +33,7 @@
   shell: "{{ openshift_cli }} create sa address-space-admin -n {{ project_name }}"
   when: install_address_space_admin_service_account | failed
 
-- name: give cluster edit rights to address-space-admin service account
+- name: give project edit rights to address-space-admin service account
   shell: "{{ openshift_cli }} adm policy add-role-to-user edit system:serviceaccount:{{ project_name }}:address-space-admin -n {{ project_name}}"
   ignore_errors: true
 
@@ -49,7 +49,7 @@
     path: "{{ enmasse_tmp_dir }}"
 
 # address-controller tls secret
-- name: check if address-controller secrets exist
+- name: check if address-controller secret exists
   shell: "{{ openshift_cli }} get secret {{ address_controller_secret_name }} -n {{ project_name }}"
   register: install_address_controller_secret
   ignore_errors: true
@@ -64,7 +64,7 @@
     tls_secret_name: "{{ address_controller_secret_name }}"
 
 # none-authservice tls secret
-- name: check if none-authservice secrets exist
+- name: check if none-authservice secret exists
   shell: "{{ openshift_cli }} get secret {{ none_authservice_secret_name }} -n {{ project_name }}"
   register: install_none_authservice_secret
   ignore_errors: true
@@ -81,7 +81,7 @@
     tls_secret_name: "{{ none_authservice_secret_name }}"
 
 # deploy none-authservice
-- name: check if none-authservice exist
+- name: check if none-authservice exists
   shell: "{{ openshift_cli }} get service {{ none_authservice_service_name }} -n {{ project_name }}"
   register: deploy_none_authservice
   ignore_errors: true
@@ -94,7 +94,7 @@
     (none_authservice is defined and none_authservice|bool == true)
 
 # standard-authservice tls secret
-- name: check if standard-authservice secrets exist
+- name: check if standard-authservice secret exists
   shell: "{{ openshift_cli }} get secret {{ standard_authservice_secret_name }} -n {{ project_name }}"
   register: install_standard_authservice_secret
   ignore_errors: true
@@ -111,7 +111,7 @@
     tls_secret_name: "{{ standard_authservice_secret_name }}"
 
 # standard-authservice keycloak credentials
-- name: check if keycloak-credentials secrets exist
+- name: check if keycloak-credentials secret exists
   shell: "{{ openshift_cli }} get secret keycloak-credentials -n {{ project_name }}"
   register: install_standard_authservice_keycloak_secret
   ignore_errors: true
@@ -128,7 +128,7 @@
     (standard_authservice is defined and standard_authservice|bool == true)
 
 # deploy standard authservice
-- name: check if standard-authservice exist
+- name: check if standard-authservice exists
   shell: "{{ openshift_cli }} get service {{ standard_authservice_service_name }} -n {{ project_name }}"
   register: deploy_standard_authservice
   ignore_errors: true
@@ -150,6 +150,23 @@
 - name: install enmasse template
   shell: "{{ openshift_cli}} process -f {{ role_path }}/files/templates/enmasse.yaml | {{ openshift_cli }} create -f - -n {{ project_name}}" 
   when: install_enmasse_template | failed
+
+# external messaging certificate
+- name: check if external messaging certificate secret exists
+  shell: "{{ openshift_cli }} get secret {{ external_messaging_secret_name }} -n {{ project_name }}"
+  register: external_messaging_certificate_secret_exists
+  ignore_errors: true
+  changed_when: false
+
+- import_tasks: deploy_tls_secret.yml
+  when: >
+    (external_messaging_certificate_secret_exists | failed) and
+    (create_external_messaging_certificate is defined and create_external_messaging_certificate|bool == true)
+  vars: 
+    crt_cn: "messaging.{{ project_name }}.svc.cluster.local"
+    crt_out: "{{ enmasse_tmp_dir}}/messaging.crt"
+    key_out: "{{ enmasse_tmp_dir}}/messaging.key"
+    tls_secret_name: "{{ external_messaging_secret_name }}"
 
 # address-space
 - import_tasks: create_address_space.yml

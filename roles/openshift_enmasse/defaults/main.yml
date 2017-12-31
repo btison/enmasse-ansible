@@ -25,6 +25,9 @@ address_space_type: brokered
 address_space_auth_type: standard 
 address_space_name: "{{ address_space_type }}-default"
 
+create_external_messaging_certificate: true
+external_messaging_secret_name: external-certs-messaging
+
 # Example: [{ name: user1, password: user},{ name: user2, password: user}]
 address_space_users: [{ name: user1, password: user}]
 
