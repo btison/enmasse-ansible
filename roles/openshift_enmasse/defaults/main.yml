@@ -33,4 +33,6 @@ address_space_users: [{ name: user1, password: user}]
 
 create_address: false
 # Example: [{"name":"queue1","type":"queue"},{"name":"queue2","type":"queue"}]
-address_names: [{name: queue-jms-sb, type: queue}]
+# Type: queue, topic, anycast, multicast
+# Plan: unlimited, inmemory, persisted, pooled-inmemory, pooled-persisted 
+address_names: [{name: queue-jms-sb, type: queue, plan: unlimited}]
