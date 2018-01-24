@@ -28,11 +28,13 @@ address_space_name: "{{ address_space_type }}-default"
 create_external_messaging_certificate: true
 external_messaging_secret_name: external-certs-messaging
 
-# Example: [{ name: user1, password: user},{ name: user2, password: user}]
+# Example: [{"name":"user1","password":"user"},{"name":"user2","password":"user"}]
 address_space_users: [{ name: user1, password: user}]
 
 create_address: false
-# Example: [{"name":"queue1","type":"queue"},{"name":"queue2","type":"queue"}]
+# Example: [{"name":"queue1","type":"queue","plan":"standard"},{"name":"queue2","type":"queue","plan":"standard"}]
 # Type: queue, topic, anycast, multicast
 # Plan: unlimited, inmemory, persisted, pooled-inmemory, pooled-persisted 
-address_names: [{name: queue-jms-sb, type: queue, plan: unlimited}]
+address_names: >
+  [{"name": "queue-jms", "type": "queue", "plan": "standard"},
+   {"name": "topic-jms", "type": "topic", "plan": "standard"}]
