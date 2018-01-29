@@ -1,0 +1,24 @@
+---
+
+enmasse_tmp_dir: "{{ tmp_dir }}/enmasse"
+
+none_authservice: true
+standard_authservice: true
+
+address_controller_secret_name: address-controller-cert
+
+none_authservice_secret_name: none-authservice-cert
+none_authservice_service_name: none-authservice
+
+standard_authservice_secret_name: standard-authservice-cert
+standard_authservice_service_name: standard-authservice
+standard_authservice_keycloak_admin_username: admin
+standard_authservice_keycloak_admin_password: admin
+
+create_address_space: true
+address_space_name: brokered-default-0
+address_space_namespace: "{{ project_name }}"
+address_space_type: brokered
+address_space_auth_type: none
+
+create_address: false

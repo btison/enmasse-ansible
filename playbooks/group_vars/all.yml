@@ -1,0 +1,12 @@
+---
+
+# oc executable
+oc_executable:
+
+project_enmasse: enmasse
+project_enmasse_name: "EnMasse Messaging Service"
+project_enmasse_desc: "EnMasse Messaging Service"
+
+project_admin: 
+
+tmp_dir: "{{ playbook_dir }}/../work"

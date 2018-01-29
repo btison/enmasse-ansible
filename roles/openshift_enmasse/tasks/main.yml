@@ -1,0 +1,202 @@
+---
+
+# create project
+- include_role: 
+    name: openshift_create_project
+
+# service account
+- name: check if service account for address-controller exists
+  shell: "{{ openshift_cli }} get sa enmasse-admin -n {{ project_name }}"
+  register: install_address_controller_service_account
+  ignore_errors: true
+  changed_when: false
+
+- name: create service account for address controller
+  shell: "{{ openshift_cli }} create sa enmasse-admin -n {{ project_name }}"
+  when: install_address_controller_service_account | failed
+
+- name: give cluster view rights to default user
+  shell: "{{ openshift_cli }} adm policy add-role-to-user view system:serviceaccount:{{ project_name }}:default -n {{ project_name}}"
+  ignore_errors: true
+
+- name: give cluster edit rights to enmasse-admin service account
+  shell: "{{ openshift_cli }} adm policy add-role-to-user edit system:serviceaccount:{{ project_name }}:enmasse-admin -n {{ project_name}}"
+  ignore_errors: true
+
+- name: check if service account for address-space-admin exists
+  shell: "{{ openshift_cli }} get sa address-space-admin -n {{ project_name }}"
+  register: install_address_space_admin_service_account
+  ignore_errors: true
+  changed_when: false
+
+- name: create service account for address controller
+  shell: "{{ openshift_cli }} create sa address-space-admin -n {{ project_name }}"
+  when: install_address_space_admin_service_account | failed
+
+- name: give cluster edit rights to address-space-admin service account
+  shell: "{{ openshift_cli }} adm policy add-role-to-user edit system:serviceaccount:{{ project_name }}:address-space-admin -n {{ project_name}}"
+  ignore_errors: true
+
+# work directory
+- name: clean tmp directory
+  file:
+    state: absent
+    path: "{{ enmasse_tmp_dir }}"
+
+- name: create tmp directory
+  file:
+    state: directory
+    path: "{{ enmasse_tmp_dir }}"
+
+# address-controller tls secret
+- name: check if address-controller secrets exist
+  shell: "{{ openshift_cli }} get secret {{ address_controller_secret_name }} -n {{ project_name }}"
+  register: install_address_controller_secret
+  ignore_errors: true
+  changed_when: false
+
+- import_tasks: deploy_tls_secret.yml
+  when: install_address_controller_secret | failed
+  vars: 
+    crt_cn: "address-controller.{{ project_name }}.svc.cluster.local"
+    crt_out: "{{ enmasse_tmp_dir}}/address-controller.crt"
+    key_out: "{{ enmasse_tmp_dir}}/address-controller.key"
+    tls_secret_name: "{{ address_controller_secret_name }}"
+
+# none-authservice tls secret
+- name: check if none-authservice secrets exist
+  shell: "{{ openshift_cli }} get secret {{ none_authservice_secret_name }} -n {{ project_name }}"
+  register: install_none_authservice_secret
+  ignore_errors: true
+  changed_when: false
+
+- import_tasks: deploy_tls_secret.yml
+  when: >
+    (install_none_authservice_secret | failed) and
+    (none_authservice is defined and none_authservice|bool == true)
+  vars: 
+    crt_cn: "none-authservice.{{ project_name }}.svc.cluster.local"
+    crt_out: "{{ enmasse_tmp_dir}}/none-authservice.crt"
+    key_out: "{{ enmasse_tmp_dir}}/none-authservice.key"
+    tls_secret_name: "{{ none_authservice_secret_name }}"
+
+# deploy none-authservice
+- name: check if none-authservice exist
+  shell: "{{ openshift_cli }} get service {{ none_authservice_service_name }} -n {{ project_name }}"
+  register: deploy_none_authservice
+  ignore_errors: true
+  changed_when: false
+
+- name: deploy none-authservice
+  shell: "{{ openshift_cli }} process -f {{ role_path }}/files/templates/none-authservice.yaml | {{ openshift_cli }} create -f - -n {{ project_name}}"
+  when: >
+    (deploy_none_authservice | failed) and
+    (none_authservice is defined and none_authservice|bool == true)
+
+# standard-authservice tls secret
+- name: check if standard-authservice secrets exist
+  shell: "{{ openshift_cli }} get secret {{ standard_authservice_secret_name }} -n {{ project_name }}"
+  register: install_standard_authservice_secret
+  ignore_errors: true
+  changed_when: false
+
+- import_tasks: deploy_tls_secret.yml
+  when: >
+    (install_standard_authservice_secret | failed) and
+    (standard_authservice is defined and standard_authservice|bool == true)
+  vars: 
+    crt_cn: "standard-authservice.{{ project_name }}.svc.cluster.local"
+    crt_out: "{{ enmasse_tmp_dir}}/standard-authservice.crt"
+    key_out: "{{ enmasse_tmp_dir}}/standard-authservice.key"
+    tls_secret_name: "{{ standard_authservice_secret_name }}"
+
+# standard-authservice keycloak credentials
+- name: check if keycloak-credentials secrets exist
+  shell: "{{ openshift_cli }} get secret keycloak-credentials -n {{ project_name }}"
+  register: install_standard_authservice_keycloak_secret
+  ignore_errors: true
+  changed_when: false
+
+- name: create secret with keycloak admin credentials
+  shell: |
+    {{ openshift_cli }} create secret generic keycloak-credentials \
+    --from-literal=admin.username={{ standard_authservice_keycloak_admin_username }} \
+    --from-literal=admin.password={{ standard_authservice_keycloak_admin_password }} \
+    -n {{ project_name }}
+  when: >
+    (install_standard_authservice_keycloak_secret | failed) and
+    (standard_authservice is defined and standard_authservice|bool == true)
+
+# deploy standard authservice
+- name: check if standard-authservice exist
+  shell: "{{ openshift_cli }} get service {{ standard_authservice_service_name }} -n {{ project_name }}"
+  register: deploy_standard_authservice
+  ignore_errors: true
+  changed_when: false
+
+- name: deploy standard-authservice
+  shell: "{{ openshift_cli }} process -f {{ role_path }}/files/templates/standard-authservice.yaml | {{ openshift_cli }} create -f - -n {{ project_name}}"
+  when: >
+    (deploy_standard_authservice | failed) and
+    (standard_authservice is defined and standard_authservice|bool == true)
+
+# enmasse template
+- name: check if enmasse template exists
+  shell: "{{ openshift_cli }} get template brokered-space-infra -n {{ project_name}}"
+  register: install_enmasse_template
+  ignore_errors: true
+  changed_when: false
+
+- name: install enmasse template
+  shell: "{{ openshift_cli}} process -f {{ role_path }}/files/templates/enmasse.yaml | {{ openshift_cli }} create -f - -n {{ project_name}}" 
+  when: install_enmasse_template | failed
+
+# address-space
+- name: get enmasse restapi route
+  shell: "{{ openshift_cli }} get route restapi -o json -n {{ project_name }}"
+  register: restapi_route
+  changed_when: false
+
+- name: wait for address-controller to be up
+  uri:
+    url: https://{{ restapi_route.stdout|from_json|json_query('spec.host') }}
+    validate_certs: false
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 10
+  delay: 30
+  when: create_address_space is defined and create_address_space|bool == true
+
+- name: check if address-space configmap already exists
+  shell: "{{ openshift_cli}} get configmap address-space-{{ address_space_name }} -n {{ project_name }}"
+  register: install_address_space_configmap
+  ignore_errors: true
+  changed_when: false
+  when: create_address_space is defined and create_address_space|bool == true
+
+- name: create address-space definition from template
+  template: src={{item}} dest={{ enmasse_tmp_dir }}/address-space-{{ address_space_name }}.json
+  with_items:
+    - address-space.json
+  when: create_address_space is defined and create_address_space|bool == true
+
+- name: create address-space
+  shell: "{{ openshift_cli}} create -f {{ enmasse_tmp_dir}}/address-space-{{ address_space_name }}.json -n {{ project_name}}"
+  when: >
+    (install_address_space_configmap | failed) and
+    (create_address_space is defined and create_address_space|bool == true)
+
+# create address
+- name: create address definition from template
+  template: src={{item}} dest={{ enmasse_tmp_dir }}/address-{{ address_name }}.json
+  with_items:
+    - address.json
+  when: create_address is defined and create_address|bool == true
+
+- name: create address
+  shell: |
+    curl -X POST -T {{ enmasse_tmp_dir}}/address-{{ address_name }}.json -H "content-type: application/json" \
+    -H "Authorization: Bearer {{ openshift_user_token }}" -k \
+    https://$(oc get route restapi -o jsonpath='{.spec.host}' -n {{ project_name }})/apis/enmasse.io/v1/addresses/{{ address_space_name }}
+  when: create_address is defined and create_address|bool == true

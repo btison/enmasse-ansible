@@ -1,0 +1,17 @@
+---
+
+- name: Deploy EnMasse
+  hosts: localhost
+  gather_facts: false
+  run_once: true
+
+  tasks:
+    - include_role:
+        name: common
+
+    - import_role:
+        name: openshift_enmasse
+      vars:
+        project_name: "{{ project_enmasse }}"
+        project_display_name: "{{ project_enmasse_name }}"
+        project_desc: "{{ project_enmasse_desc }}"

@@ -1,0 +1,16 @@
+{
+  "apiVersion": "v1",
+  "kind": "AddressList",
+  "items": [
+    {
+      "metadata": {
+        "name": "{{ address_name }}",
+        "addressSpace": "{{ address_space_name }}"
+      },
+      "spec": {
+      	"address": "{{ address_name }}",
+        "type": "{{ address_type }}"
+      }
+    }
+  ]
+}
