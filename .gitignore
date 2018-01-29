@@ -1,0 +1,3 @@
+*.retry
+work
+roles/openshift_enmasse/files/enmasse_keycloak_client
