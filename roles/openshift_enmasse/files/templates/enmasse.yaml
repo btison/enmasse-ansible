@@ -706,13 +706,13 @@ objects:
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0-rc4
+      value: docker.io/enmasseproject/artemis:0.16.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0-rc4
+      value: docker.io/enmasseproject/topic-forwarder:0.16.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0-rc4
+      value: docker.io/enmasseproject/router:0.16.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -897,13 +897,13 @@ objects:
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0-rc4
+      value: docker.io/enmasseproject/artemis:0.16.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0-rc4
+      value: docker.io/enmasseproject/topic-forwarder:0.16.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0-rc4
+      value: docker.io/enmasseproject/router:0.16.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -1147,13 +1147,13 @@ objects:
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0-rc4
+      value: docker.io/enmasseproject/artemis:0.16.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0-rc4
+      value: docker.io/enmasseproject/topic-forwarder:0.16.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0-rc4
+      value: docker.io/enmasseproject/router:0.16.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -1411,13 +1411,13 @@ objects:
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0-rc4
+      value: docker.io/enmasseproject/artemis:0.16.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0-rc4
+      value: docker.io/enmasseproject/topic-forwarder:0.16.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0-rc4
+      value: docker.io/enmasseproject/router:0.16.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -1459,30 +1459,30 @@ objects:
     value: ''
   - description: The image to use for the router
     name: ROUTER_IMAGE
-    value: docker.io/enmasseproject/router:0.16.0-rc4
+    value: docker.io/enmasseproject/router:0.16.0
   - description: The image to use for the router metrics collector
     name: ROUTER_METRICS_IMAGE
-    value: docker.io/enmasseproject/router-metrics:0.16.0-rc4
+    value: docker.io/enmasseproject/router-metrics:0.16.0
   - description: The link capacity setting for router
     name: ROUTER_LINK_CAPACITY
     value: '50'
   - description: The image to use for the configuration service
     name: CONFIGSERV_IMAGE
-    value: docker.io/enmasseproject/configserv:0.16.0-rc4
+    value: docker.io/enmasseproject/configserv:0.16.0
   - description: The docker image to use for the queue scheduler
     name: QUEUE_SCHEDULER_IMAGE
-    value: docker.io/enmasseproject/queue-scheduler:0.16.0-rc4
+    value: docker.io/enmasseproject/queue-scheduler:0.16.0
   - description: The docker image to use for the standard controller
     name: STANDARD_CONTROLLER_IMAGE
-    value: docker.io/enmasseproject/standard-controller:0.16.0-rc4
+    value: docker.io/enmasseproject/standard-controller:0.16.0
   - description: The image to use for the enmasse agent
     name: AGENT_IMAGE
-    value: docker.io/enmasseproject/agent:0.16.0-rc4
+    value: docker.io/enmasseproject/agent:0.16.0
   - description: The hostname to use for the exposed route for messaging
     name: MESSAGING_HOSTNAME
   - description: The image to use for the MQTT gateway
     name: MQTT_GATEWAY_IMAGE
-    value: docker.io/enmasseproject/mqtt-gateway:0.16.0-rc4
+    value: docker.io/enmasseproject/mqtt-gateway:0.16.0
   - description: The hostname to use for the exposed route for MQTT
     name: MQTT_GATEWAY_HOSTNAME
   - description: The hostname to use for the exposed route for the messaging console
@@ -1498,7 +1498,7 @@ objects:
     required: true
   - description: The image to use for the MQTT LWT
     name: MQTT_LWT_IMAGE
-    value: docker.io/enmasseproject/mqtt-lwt:0.16.0-rc4
+    value: docker.io/enmasseproject/mqtt-lwt:0.16.0
   - description: The address space this infrastructure is deployed for
     name: ADDRESS_SPACE
     required: true
@@ -1820,10 +1820,10 @@ objects:
     value: ''
   - description: The docker image to use for the message broker
     name: BROKER_IMAGE
-    value: docker.io/enmasseproject/artemis:0.16.0-rc4
+    value: docker.io/enmasseproject/artemis:0.16.0
   - description: The docker image to use for the enmasse agent
     name: AGENT_IMAGE
-    value: docker.io/enmasseproject/agent:0.16.0-rc4
+    value: docker.io/enmasseproject/agent:0.16.0
   - description: Storage capacity required for volume claims
     name: STORAGE_CAPACITY
     value: 2Gi
@@ -1951,7 +1951,7 @@ parameters:
   value: enmasse-admin
 - description: The docker image to use for the address controller
   name: ADDRESS_CONTROLLER_IMAGE
-  value: docker.io/enmasseproject/address-controller:0.16.0-rc4
+  value: docker.io/enmasseproject/address-controller:0.16.0
 - description: Name of the secret containing the address controller certificate
   name: ADDRESS_CONTROLLER_CERT_SECRET
   value: address-controller-cert

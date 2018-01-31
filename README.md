@@ -1,6 +1,6 @@
 ### Ansible playbooks for deployment of EnMasse to OCP
 
-Enmasse version: 0.16.0-rc4
+Enmasse version: 0.16.0
 
 #### Prerequisites
 
