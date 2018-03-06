@@ -1,6 +1,6 @@
 ### Ansible playbooks for deployment of EnMasse to OCP
 
-Enmasse version: 0.16.0
+Enmasse version: 0.17.0
 
 #### Prerequisites
 
@@ -39,7 +39,7 @@ Enmasse version: 0.16.0
 
     ```
     $ ansible-playbook playbooks/enmasse.yml -e create_address=true \ 
-    -e address_names='[{"name":"queue1","type":"queue","plan":"standard"},{"name":"queue2","type":"queue","plan":"standard"}]'
+    -e address_names='[{"name":"queue1","type":"queue","plan":"brokered-queue"},{"name":"queue2","type":"queue","plan":"brokered-topic"}]'
     ```
 
 ### ToDo

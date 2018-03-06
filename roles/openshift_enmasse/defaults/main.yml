@@ -24,6 +24,7 @@ address_space_type: brokered
 # none.standard
 address_space_auth_type: standard 
 address_space_name: "{{ address_space_type }}-default"
+address_space_plan: unlimited-{{ address_space_type }}
 
 create_external_messaging_certificate: true
 external_messaging_secret_name: external-certs-messaging
@@ -36,5 +37,5 @@ create_address: false
 # Type: queue, topic, anycast, multicast
 # Plan: unlimited, inmemory, persisted, pooled-inmemory, pooled-persisted 
 address_names: >
-  [{"name": "queue-jms", "type": "queue", "plan": "standard"},
-   {"name": "topic-jms", "type": "topic", "plan": "standard"}]
+  [{"name": "queue-jms", "type": "queue", "plan": "brokered-queue"},
+   {"name": "topic-jms", "type": "topic", "plan": "brokered-topic"}]

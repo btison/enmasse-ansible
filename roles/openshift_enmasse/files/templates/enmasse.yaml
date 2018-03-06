@@ -236,9 +236,9 @@ objects:
               protocol: TCP
             resources:
               limits:
-                memory: 64Mi
+                memory: 128Mi
               requests:
-                memory: 64Mi
+                memory: 128Mi
             volumeMounts:
             - mountPath: /etc/enmasse-certs
               name: subserv-internal-cert
@@ -378,35 +378,6 @@ objects:
           - env:
             - name: CERT_DIR
               value: /etc/enmasse-certs
-            - name: JAVA_OPTS
-              value: -verbose:gc
-            - name: LISTEN_PORT
-              value: '55667'
-            - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            image: ${QUEUE_SCHEDULER_IMAGE}
-            livenessProbe:
-              initialDelaySeconds: 60
-              tcpSocket:
-                port: amqp
-            name: queue-scheduler
-            ports:
-            - containerPort: 55667
-              name: amqp
-            resources:
-              limits:
-                memory: 128Mi
-              requests:
-                memory: 128Mi
-            volumeMounts:
-            - mountPath: /etc/enmasse-certs
-              name: admin-internal-cert
-              readOnly: true
-          - env:
-            - name: CERT_DIR
-              value: /etc/enmasse-certs
             - name: ADDRESS_SPACE
               value: ${ADDRESS_SPACE}
             - name: AUTHENTICATION_SERVICE_HOST
@@ -442,9 +413,9 @@ objects:
               initialDelaySeconds: 30
             resources:
               limits:
-                memory: 256Mi
+                memory: 512Mi
               requests:
-                memory: 256Mi
+                memory: 512Mi
             volumeMounts:
             - mountPath: /etc/enmasse-certs
               name: admin-internal-cert
@@ -552,7 +523,7 @@ objects:
       ports:
       - name: amqp
         port: 5672
-        targetPort: 55667
+        targetPort: 55671
       selector:
         name: admin
   - apiVersion: v1
@@ -596,6 +567,7 @@ objects:
       kind: StatefulSet
       metadata:
         annotations:
+          address: ${ADDRESS}
           addressSpace: ${ADDRESS_SPACE}
           cluster_id: ${CLUSTER_ID}
           io.enmasse.certCn: broker
@@ -609,6 +581,7 @@ objects:
         template:
           metadata:
             annotations:
+              address: ${ADDRESS}
               addressSpace: ${ADDRESS_SPACE}
               cluster_id: ${CLUSTER_ID}
               prometheus.io/path: /metrics
@@ -671,7 +644,7 @@ objects:
                   memory: ${BROKER_MEMORY_LIMIT}
               volumeMounts:
               - mountPath: /var/run/artemis
-                name: vol-${NAME}
+                name: ${NAME}
                 readOnly: false
               - mountPath: /etc/enmasse-certs
                 name: broker-internal-cert
@@ -699,20 +672,20 @@ objects:
                 name: broker-prometheus-config
               name: broker-prometheus-config
             - emptyDir: {}
-              name: vol-${NAME}
+              name: ${NAME}
     parameters:
     - description: Storage capacity required for volume claims
       name: STORAGE_CAPACITY
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0
+      value: docker.io/enmasseproject/artemis:0.17.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0
+      value: docker.io/enmasseproject/topic-forwarder:0.17.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0
+      value: docker.io/enmasseproject/router:0.17.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -773,6 +746,7 @@ objects:
       kind: StatefulSet
       metadata:
         annotations:
+          address: ${ADDRESS}
           addressSpace: ${ADDRESS_SPACE}
           cluster_id: ${CLUSTER_ID}
           io.enmasse.certCn: broker
@@ -786,6 +760,7 @@ objects:
         template:
           metadata:
             annotations:
+              address: ${ADDRESS}
               addressSpace: ${ADDRESS_SPACE}
               cluster_id: ${CLUSTER_ID}
               prometheus.io/path: /metrics
@@ -848,7 +823,7 @@ objects:
                   memory: ${BROKER_MEMORY_LIMIT}
               volumeMounts:
               - mountPath: /var/run/artemis
-                name: vol-${NAME}
+                name: ${NAME}
                 readOnly: false
               - mountPath: /etc/enmasse-certs
                 name: broker-internal-cert
@@ -884,7 +859,7 @@ objects:
               cluster_id: ${CLUSTER_ID}
             labels:
               app: enmasse
-            name: vol-${NAME}
+            name: ${NAME}
           spec:
             accessModes:
             - ReadWriteOnce
@@ -897,13 +872,13 @@ objects:
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0
+      value: docker.io/enmasseproject/artemis:0.17.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0
+      value: docker.io/enmasseproject/topic-forwarder:0.17.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0
+      value: docker.io/enmasseproject/router:0.17.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -964,6 +939,7 @@ objects:
       kind: StatefulSet
       metadata:
         annotations:
+          address: ${ADDRESS}
           addressSpace: ${ADDRESS_SPACE}
           cluster_id: ${CLUSTER_ID}
           io.enmasse.certCn: broker
@@ -977,6 +953,7 @@ objects:
         template:
           metadata:
             annotations:
+              address: ${ADDRESS}
               addressSpace: ${ADDRESS_SPACE}
               cluster_id: ${CLUSTER_ID}
               prometheus.io/path: /metrics
@@ -1039,7 +1016,7 @@ objects:
                   memory: ${BROKER_MEMORY_LIMIT}
               volumeMounts:
               - mountPath: /var/run/artemis
-                name: vol-${NAME}
+                name: ${NAME}
                 readOnly: false
               - mountPath: /etc/enmasse-certs
                 name: broker-internal-cert
@@ -1140,20 +1117,20 @@ objects:
                 name: broker-prometheus-config
               name: broker-prometheus-config
             - emptyDir: {}
-              name: vol-${NAME}
+              name: ${NAME}
     parameters:
     - description: Storage capacity required for volume claims
       name: STORAGE_CAPACITY
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0
+      value: docker.io/enmasseproject/artemis:0.17.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0
+      value: docker.io/enmasseproject/topic-forwarder:0.17.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0
+      value: docker.io/enmasseproject/router:0.17.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -1214,6 +1191,7 @@ objects:
       kind: StatefulSet
       metadata:
         annotations:
+          address: ${ADDRESS}
           addressSpace: ${ADDRESS_SPACE}
           cluster_id: ${CLUSTER_ID}
           io.enmasse.certCn: broker
@@ -1227,6 +1205,7 @@ objects:
         template:
           metadata:
             annotations:
+              address: ${ADDRESS}
               addressSpace: ${ADDRESS_SPACE}
               cluster_id: ${CLUSTER_ID}
               prometheus.io/path: /metrics
@@ -1289,7 +1268,7 @@ objects:
                   memory: ${BROKER_MEMORY_LIMIT}
               volumeMounts:
               - mountPath: /var/run/artemis
-                name: vol-${NAME}
+                name: ${NAME}
                 readOnly: false
               - mountPath: /etc/enmasse-certs
                 name: broker-internal-cert
@@ -1398,7 +1377,7 @@ objects:
               cluster_id: ${CLUSTER_ID}
             labels:
               app: enmasse
-            name: vol-${NAME}
+            name: ${NAME}
           spec:
             accessModes:
             - ReadWriteOnce
@@ -1411,13 +1390,13 @@ objects:
       value: 2Gi
     - description: The docker image to use for the message broker
       name: BROKER_IMAGE
-      value: docker.io/enmasseproject/artemis:0.16.0
+      value: docker.io/enmasseproject/artemis:0.17.0
     - description: The default image to use as topic forwarder
       name: TOPIC_FORWARDER_IMAGE
-      value: docker.io/enmasseproject/topic-forwarder:0.16.0
+      value: docker.io/enmasseproject/topic-forwarder:0.17.0
     - description: The image to use for the router
       name: ROUTER_IMAGE
-      value: docker.io/enmasseproject/router:0.16.0
+      value: docker.io/enmasseproject/router:0.17.0
     - description: The link capacity setting for router
       name: ROUTER_LINK_CAPACITY
       value: '50'
@@ -1459,30 +1438,30 @@ objects:
     value: ''
   - description: The image to use for the router
     name: ROUTER_IMAGE
-    value: docker.io/enmasseproject/router:0.16.0
+    value: docker.io/enmasseproject/router:0.17.0
   - description: The image to use for the router metrics collector
     name: ROUTER_METRICS_IMAGE
-    value: docker.io/enmasseproject/router-metrics:0.16.0
+    value: docker.io/enmasseproject/router-metrics:0.17.0
   - description: The link capacity setting for router
     name: ROUTER_LINK_CAPACITY
     value: '50'
   - description: The image to use for the configuration service
     name: CONFIGSERV_IMAGE
-    value: docker.io/enmasseproject/configserv:0.16.0
+    value: docker.io/enmasseproject/configserv:latest
   - description: The docker image to use for the queue scheduler
     name: QUEUE_SCHEDULER_IMAGE
-    value: docker.io/enmasseproject/queue-scheduler:0.16.0
+    value: docker.io/enmasseproject/queue-scheduler:latest
   - description: The docker image to use for the standard controller
     name: STANDARD_CONTROLLER_IMAGE
-    value: docker.io/enmasseproject/standard-controller:0.16.0
+    value: docker.io/enmasseproject/standard-controller:0.17.0
   - description: The image to use for the enmasse agent
     name: AGENT_IMAGE
-    value: docker.io/enmasseproject/agent:0.16.0
+    value: docker.io/enmasseproject/agent:0.17.0
   - description: The hostname to use for the exposed route for messaging
     name: MESSAGING_HOSTNAME
   - description: The image to use for the MQTT gateway
     name: MQTT_GATEWAY_IMAGE
-    value: docker.io/enmasseproject/mqtt-gateway:0.16.0
+    value: docker.io/enmasseproject/mqtt-gateway:0.17.0
   - description: The hostname to use for the exposed route for MQTT
     name: MQTT_GATEWAY_HOSTNAME
   - description: The hostname to use for the exposed route for the messaging console
@@ -1498,7 +1477,7 @@ objects:
     required: true
   - description: The image to use for the MQTT LWT
     name: MQTT_LWT_IMAGE
-    value: docker.io/enmasseproject/mqtt-lwt:0.16.0
+    value: docker.io/enmasseproject/mqtt-lwt:0.17.0
   - description: The address space this infrastructure is deployed for
     name: ADDRESS_SPACE
     required: true
@@ -1618,10 +1597,6 @@ objects:
               name: amqp
             - containerPort: 5671
               name: amqps
-            - containerPort: 61616
-              name: core
-            - containerPort: 61613
-              name: openwire
             - containerPort: 55671
               name: amqps-normal
             - containerPort: 8161
@@ -1697,12 +1672,6 @@ objects:
       - name: amqps
         port: 5671
         targetPort: amqps
-      - name: core
-        port: 61616
-        targetPort: core
-      - name: openwire
-        port: 61613
-        targetPort: openwire
       selector:
         role: broker
   - apiVersion: extensions/v1beta1
@@ -1820,10 +1789,10 @@ objects:
     value: ''
   - description: The docker image to use for the message broker
     name: BROKER_IMAGE
-    value: docker.io/enmasseproject/artemis:0.16.0
+    value: docker.io/enmasseproject/artemis:0.17.0
   - description: The docker image to use for the enmasse agent
     name: AGENT_IMAGE
-    value: docker.io/enmasseproject/agent:0.16.0
+    value: docker.io/enmasseproject/agent:0.17.0
   - description: Storage capacity required for volume claims
     name: STORAGE_CAPACITY
     value: 2Gi
@@ -1951,7 +1920,7 @@ parameters:
   value: enmasse-admin
 - description: The docker image to use for the address controller
   name: ADDRESS_CONTROLLER_IMAGE
-  value: docker.io/enmasseproject/address-controller:0.16.0
+  value: docker.io/enmasseproject/address-controller:0.17.0
 - description: Name of the secret containing the address controller certificate
   name: ADDRESS_CONTROLLER_CERT_SECRET
   value: address-controller-cert

@@ -199,7 +199,7 @@ objects:
 parameters:
 - description: The docker image to use for the keycloak plugin image
   name: KEYCLOAK_PLUGIN_IMAGE
-  value: docker.io/enmasseproject/keycloak-plugin:0.16.0
+  value: docker.io/enmasseproject/keycloak-plugin:0.17.0
 - description: The docker image to use for the 'standard' auth service
   name: STANDARD_AUTHSERVICE_IMAGE
   value: jboss/keycloak-openshift:3.3.0.Final
@@ -208,7 +208,7 @@ parameters:
   value: keycloak-credentials
 - description: The docker image to use for the keycloak controller
   name: KEYCLOAK_CONTROLLER_IMAGE
-  value: docker.io/enmasseproject/keycloak-controller:0.16.0
+  value: docker.io/enmasseproject/keycloak-controller:0.17.0
 - description: The configmap used to configure the keycloak controller
   name: KEYCLOAK_CONTROLLER_CONFIGMAP_NAME
   value: keycloak-controller-config

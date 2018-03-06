@@ -16,19 +16,21 @@
   delay: 30
 
 - name: check if address-space configmap already exists
-  shell: "{{ openshift_cli}} get configmap address-space-{{ address_space_name }} -n {{ project_name }}"
-  register: install_address_space_configmap
+  shell: "{{ openshift_cli}} get configmap {{ address_space_name }} -n {{ project_name }}"
+  register: address_space_configmap_exists
   ignore_errors: true
   changed_when: false
 
-- name: create address-space definition from template
-  template: src={{item}} dest={{ enmasse_tmp_dir }}/address-space-{{ address_space_name }}.json
-  with_items:
-    - address-space.json
-
 - name: create address-space
-  shell: "{{ openshift_cli}} create -f {{ enmasse_tmp_dir}}/address-space-{{ address_space_name }}.json -n {{ project_name}}"
-  when: install_address_space_configmap | failed
+  shell: |
+    {{ openshift_cli}} process -f {{ role_path }}/files/templates/address-space.yaml \
+    -p NAME={{ address_space_name }} \
+    -p NAMESPACE={{ project_name }} \
+    -p TYPE={{ address_space_type }} \
+    -p PLAN={{ address_space_plan }} \
+    -p AUTHENTICATION_SERVICE={{ address_space_auth_type }} \
+    | oc apply -n {{ project_name }} -f -
+  when: address_space_configmap_exists | failed
 
 - name: copy enmasse-keycloak-client.jar to {{ enmasse_tmp_dir }}
   copy: src=enmasse_keycloak_client/{{ enmasse_keycloak_client }} dest={{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }}
