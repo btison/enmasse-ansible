@@ -30,7 +30,7 @@
     -p PLAN={{ address_space_plan }} \
     -p AUTHENTICATION_SERVICE={{ address_space_auth_type }} \
     | oc apply -n {{ project_name }} -f -
-  when: address_space_configmap_exists | failed
+  when: address_space_configmap_exists is failed
 
 - name: copy enmasse-keycloak-client.jar to {{ enmasse_tmp_dir }}
   copy: src=enmasse_keycloak_client/{{ enmasse_keycloak_client }} dest={{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }}

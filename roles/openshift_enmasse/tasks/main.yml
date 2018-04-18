@@ -24,7 +24,7 @@
 
 - name: create service account for address controller
   shell: "{{ openshift_cli }} create sa enmasse-admin -n {{ project_name }}"
-  when: address_controller_service_account_exists | failed
+  when: address_controller_service_account_exists is failed
 
 - name: give project view rights to default user
   shell: "{{ openshift_cli }} adm policy add-role-to-user view system:serviceaccount:{{ project_name }}:default -n {{ project_name }}"
@@ -42,7 +42,7 @@
 
 - name: create service account for address controller
   shell: "{{ openshift_cli }} create sa address-space-admin -n {{ project_name }}"
-  when: address_space_admin_service_account_exists | failed
+  when: address_space_admin_service_account_exists is failed
 
 - name: give project admin rights to address-space-admin service account
   shell: "{{ openshift_cli }} adm policy add-role-to-user admin system:serviceaccount:{{ project_name }}:address-space-admin -n {{ project_name }}"
@@ -60,7 +60,7 @@
   shell: "{{ openshift_cli }} apply -f {{ role_path }}/files/templates/brokered-plans.yaml -n {{ project_name }}"
   when: >
     (address_space_type == 'brokered') and
-    (brokered_address_space_plan_exists | failed)
+    (brokered_address_space_plan_exists is failed)
 
 - name: check if standard address space plan exists
   shell: "{{ openshift_cli }} get configmap address-space-plan-standard -n {{ project_name }}"
@@ -73,7 +73,7 @@
   shell: "{{ openshift_cli }} apply -f {{ role_path }}/files/templates/standard-plans.yaml -n {{ project_name }}"
   when: >
     (address_space_type == 'standard') and
-    (standard_address_space_plan_exists | failed)
+    (standard_address_space_plan_exists is failed)
 
 # address-controller tls secret
 - name: check if address-controller secret exists
@@ -83,7 +83,7 @@
   changed_when: false
 
 - import_tasks: deploy_tls_secret.yml
-  when: address_controller_secret_exists | failed
+  when: address_controller_secret_exists is failed
   vars: 
     crt_cn: "address-controller.{{ project_name }}.svc.cluster.local"
     crt_out: "{{ enmasse_tmp_dir}}/address-controller.crt"
@@ -99,7 +99,7 @@
 
 - import_tasks: deploy_tls_secret.yml
   when: >
-    (none_authservice_secret_exists | failed) and
+    (none_authservice_secret_exists is failed) and
     (none_authservice is defined and none_authservice|bool == true)
   vars: 
     crt_cn: "none-authservice.{{ project_name }}.svc.cluster.local"
@@ -117,7 +117,7 @@
 - name: deploy none-authservice
   shell: "{{ openshift_cli }} process -f {{ role_path }}/files/templates/none-authservice.yaml | {{ openshift_cli }} create -f - -n {{ project_name }}"
   when: >
-    (none_authservice_deployed | failed) and
+    (none_authservice_deployed is failed) and
     (none_authservice is defined and none_authservice|bool == true)
 
 # standard-authservice tls secret
@@ -129,7 +129,7 @@
 
 - import_tasks: deploy_tls_secret.yml
   when: >
-    (standard_authservice_secret_exists | failed) and
+    (standard_authservice_secret_exists is failed) and
     (standard_authservice is defined and standard_authservice|bool == true)
   vars: 
     crt_cn: "standard-authservice.{{ project_name }}.svc.cluster.local"
@@ -151,7 +151,7 @@
     --from-literal=admin.password={{ standard_authservice_keycloak_admin_password }} \
     -n {{ project_name }}
   when: >
-    (standard_authservice_keycloak_secret_exists | failed) and
+    (standard_authservice_keycloak_secret_exists is failed) and
     (standard_authservice is defined and standard_authservice|bool == true)
 
 # deploy standard authservice
@@ -164,7 +164,7 @@
 - name: deploy standard-authservice
   shell: "{{ openshift_cli }} process -f {{ role_path }}/files/templates/standard-authservice.yaml | {{ openshift_cli }} create -f - -n {{ project_name }}"
   when: >
-    (standard_authservice_deployed | failed) and
+    (standard_authservice_deployed is failed) and
     (standard_authservice is defined and standard_authservice|bool == true)
 
 # enmasse template
@@ -176,7 +176,7 @@
 
 - name: install enmasse template
   shell: "{{ openshift_cli}} process -f {{ role_path }}/files/templates/enmasse.yaml | {{ openshift_cli }} create -f - -n {{ project_name }}"
-  when: enmasse_template_exists | failed
+  when: enmasse_template_exists is failed
 
 # external messaging certificate
 - name: check if external messaging certificate secret exists
@@ -187,7 +187,7 @@
 
 - import_tasks: deploy_tls_secret.yml
   when: >
-    (external_messaging_certificate_secret_exists | failed) and
+    (external_messaging_certificate_secret_exists is failed) and
     (create_external_messaging_certificate is defined and create_external_messaging_certificate|bool == true)
   vars: 
     crt_cn: "messaging.{{ project_name }}.svc.cluster.local"
