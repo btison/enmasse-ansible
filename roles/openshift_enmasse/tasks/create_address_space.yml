@@ -36,6 +36,16 @@
   copy: src=enmasse_keycloak_client/{{ enmasse_keycloak_client }} dest={{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }}
   changed_when: false
 
+- name: wait until keycloak is running
+  shell: "{{ openshift_cli }} get deployment {{ keycloak_deployment }} -o template --template={{ json_template }} -n {{ project_name }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 20
+  delay: 30
+  changed_when: false
+
 - name: check if keycloak realm for address-space {{ address_space_name }} exists
   shell: java -jar {{ enmasse_tmp_dir}}/{{ enmasse_keycloak_client }} -n {{ project_name }} -o check-realm -r {{ address_space_name }}
   when: address_space_auth_type == 'standard'

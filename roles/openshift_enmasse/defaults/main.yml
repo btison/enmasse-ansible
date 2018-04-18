@@ -17,6 +17,8 @@ standard_authservice_keycloak_admin_password: admin
 
 enmasse_keycloak_client: enmasse-keycloak-client.jar
 
+keycloak_deployment: keycloak
+
 create_address_space: false
 address_space_namespace: "{{ project_name }}"
 # brokered,standard
