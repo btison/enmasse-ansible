@@ -71,7 +71,12 @@ data:
       "longDescription": "Creates a queue on a broker.",
       "uuid": "69f82df8-0501-11e8-a0a8-507b9def37d9",
       "addressType": "queue",
-      "requiredResources": []
+      "requiredResources": [
+        {
+          "name": "broker",
+          "credit": 0.0
+        }
+      ]
     }
 ---
 apiVersion: v1
@@ -94,5 +99,10 @@ data:
       "longDescription": "Creates a topic on a broker.",
       "uuid": "a991e6fc-0501-11e8-8230-507b9def37d9",
       "addressType": "topic",
-      "requiredResources": []
+      "requiredResources": [
+        {
+          "name": "broker",
+          "credit": 0.0
+        }
+      ]
     }

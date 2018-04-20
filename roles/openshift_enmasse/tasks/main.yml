@@ -48,7 +48,18 @@
   shell: "{{ openshift_cli }} adm policy add-role-to-user admin system:serviceaccount:{{ project_name }}:address-space-admin -n {{ project_name }}"
   ignore_errors: true
 
-# name: address space plans
+# resource definitions
+- name: check if resource definitions exists
+  shell: "{{ openshift_cli }} get configmap resource-definition-router -n {{ project_name }}"
+  register: resource_definitions_exist
+  ignore_errors: true
+  changed_when: false
+
+- name: create resource definitions
+  shell: "{{ openshift_cli }} apply -f {{ role_path }}/files/templates/resource-definitions.yaml -n {{ project_name }}"
+  when: resource_definitions_exist is failed
+
+# address space plans
 - name: check if brokered address space plan exists
   shell: "{{ openshift_cli }} get configmap address-space-plan-brokered -n {{ project_name }}"
   register: brokered_address_space_plan_exists
@@ -166,6 +177,31 @@
   when: >
     (standard_authservice_deployed is failed) and
     (standard_authservice is defined and standard_authservice|bool == true)
+
+# keycloak-config configmap
+- name: register keycloak host
+  shell: "{{ openshift_cli }} get route keycloak -o jsonpath={.spec.host} -n {{ project_name }}"
+  register: keycloak_host
+  changed_when: false
+  when: standard_authservice is defined and standard_authservice|bool == true
+
+- name: check if keycloak-config configmap exists
+  shell: "{{ openshift_cli }} get configmap keycloak-config -n {{ project_name }}"
+  register: keycloak_config_configmap_exists
+  ignore_errors: true
+  changed_when: false
+
+- name: create keycloak-config configmap
+  shell: |
+    {{ openshift_cli }} create configmap keycloak-config \
+    --from-literal=hostname=standard-authservice.{{ project_name }}.svc \
+    --from-literal=httpUrl=https://{{ keycloak_host.stdout }}/auth \
+    --from-literal=port=5671 \
+    --from-literal=caSecretName=standard-authservice-cert \
+    -n {{ project_name }}
+  when: >
+    (standard_authservice is defined and standard_authservice|bool == true) and
+    (keycloak_config_configmap_exists is failed)
 
 # enmasse template
 - name: check if enmasse template exists
