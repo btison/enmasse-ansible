@@ -97,6 +97,11 @@
   when: address_controller_secret_exists is failed
   vars: 
     crt_cn: "address-controller.{{ project_name }}.svc.cluster.local"
+    crt_cn_alt: "subjectAltName=DNS:address-controller.{{ project_name }}.svc.cluster,DNS:address-controller.{{ project_name }}.svc"
+    ca_serial: "{{ enmasse_tmp_dir}}/address-controller.srl"
+    ca_key: "{{ enmasse_tmp_dir}}/address-controller.ca_key"
+    ca_crt: "{{ enmasse_tmp_dir}}/address-controller.ca_crt"
+    ca_csr: "{{ enmasse_tmp_dir}}/address-controller.csr"
     crt_out: "{{ enmasse_tmp_dir}}/address-controller.crt"
     key_out: "{{ enmasse_tmp_dir}}/address-controller.key"
     tls_secret_name: "{{ address_controller_secret_name }}"
@@ -114,6 +119,11 @@
     (none_authservice is defined and none_authservice|bool == true)
   vars: 
     crt_cn: "none-authservice.{{ project_name }}.svc.cluster.local"
+    crt_cn_alt: "subjectAltName=DNS:none-authservice.{{ project_name }}.svc.cluster,DNS:subjectAltName=DNS:none-authservice.{{ project_name }}.svc,DNS:none-authservice"
+    ca_serial: "{{ enmasse_tmp_dir}}/none-authservice.srl"
+    ca_key: "{{ enmasse_tmp_dir}}/none-authservice.ca_key"
+    ca_crt: "{{ enmasse_tmp_dir}}/none-authservice.ca_crt"
+    ca_csr: "{{ enmasse_tmp_dir}}/none-authservice.csr"
     crt_out: "{{ enmasse_tmp_dir}}/none-authservice.crt"
     key_out: "{{ enmasse_tmp_dir}}/none-authservice.key"
     tls_secret_name: "{{ none_authservice_secret_name }}"
@@ -144,6 +154,11 @@
     (standard_authservice is defined and standard_authservice|bool == true)
   vars: 
     crt_cn: "standard-authservice.{{ project_name }}.svc.cluster.local"
+    crt_cn_alt: "subjectAltName=DNS:standard-authservice.{{ project_name }}.svc.cluster,DNS:standard-authservice.{{ project_name }}.svc,DNS:standard-authservice"
+    ca_serial: "{{ enmasse_tmp_dir}}/standard-authservice.srl"
+    ca_key: "{{ enmasse_tmp_dir}}/standard-authservice.ca_key"
+    ca_crt: "{{ enmasse_tmp_dir}}/standard-authservice.ca_crt"
+    ca_csr: "{{ enmasse_tmp_dir}}/standard-authservice.csr"
     crt_out: "{{ enmasse_tmp_dir}}/standard-authservice.crt"
     key_out: "{{ enmasse_tmp_dir}}/standard-authservice.key"
     tls_secret_name: "{{ standard_authservice_secret_name }}"
@@ -185,6 +200,31 @@
   changed_when: false
   when: standard_authservice is defined and standard_authservice|bool == true
 
+- name: Retrieve keycloak service cluster ip
+  shell: "{{ openshift_cli }} get service standard-authservice -o jsonpath={.spec.clusterIP} -n {{ project_name }}"
+  register: authservice_clusterip
+
+- name: Set keycloak internal url
+  set_fact:
+    keycloak_http_url: "https://{{ authservice_clusterip.stdout }}:8443/auth"
+
+- name: Check if OAUTH service account exists
+  shell: "{{ openshift_cli }} get sa kc-oauth -n {{ project_name }}"
+  register: oauth_sa_exists
+  ignore_errors: true
+
+- name: Create OAUTH service account
+  shell: "{{ openshift_cli }} create sa kc-oauth -n {{ project_name }}"
+  when: oauth_sa_exists is failed
+
+- name: Annotate OAUTH service account
+  shell: "{{ openshift_cli }} annotate sa kc-oauth serviceaccounts.openshift.io/oauth-redirecturi.first={{ keycloak_http_url }} -n {{ project_name }}"
+  when: oauth_sa_exists is failed
+
+- name: Obtain token for service account kc-oauth
+  shell: "{{ openshift_cli }} sa get-token kc-oauth -n {{ project_name }}"
+  register: token_result
+
 - name: check if keycloak-config configmap exists
   shell: "{{ openshift_cli }} get configmap keycloak-config -n {{ project_name }}"
   register: keycloak_config_configmap_exists
@@ -198,6 +238,8 @@
     --from-literal=httpUrl=https://{{ keycloak_host.stdout }}/auth \
     --from-literal=port=5671 \
     --from-literal=caSecretName=standard-authservice-cert \
+    --from-literal=identityProviderClientId=system:serviceaccount:{{ project_name }}:kc-oauth \
+    --from-literal=identityProviderClientSecret={{ token_result.stdout }} \
     -n {{ project_name }}
   when: >
     (standard_authservice is defined and standard_authservice|bool == true) and
@@ -227,6 +269,7 @@
     (create_external_messaging_certificate is defined and create_external_messaging_certificate|bool == true)
   vars: 
     crt_cn: "messaging.{{ project_name }}.svc.cluster.local"
+    crt_cn_alt: ""
     crt_out: "{{ enmasse_tmp_dir}}/messaging.crt"
     key_out: "{{ enmasse_tmp_dir}}/messaging.key"
     tls_secret_name: "{{ external_messaging_secret_name }}"
