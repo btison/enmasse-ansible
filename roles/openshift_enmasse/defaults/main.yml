@@ -7,24 +7,32 @@ standard_authservice: true
 
 address_controller_secret_name: address-controller-cert
 
+resource_definitions_template: "{{ role_path }}/files/templates/resource-definitions.yaml"
+brokered_address_space_plans_template: "{{ role_path }}/files/templates/brokered-plans.yaml"
+standard_address_space_plans_template: "{{ role_path }}/files/templates/standard-plans.yaml"
+
 none_authservice_secret_name: none-authservice-cert
 none_authservice_service_name: none-authservice
+none_authservice_template: "{{ role_path }}/files/templates/none-authservice.yaml"
 
 standard_authservice_secret_name: standard-authservice-cert
 standard_authservice_service_name: standard-authservice
+standard_authservice_template: "{{ role_path }}/files/templates/standard-authservice.yaml"
 standard_authservice_keycloak_admin_username: admin
 standard_authservice_keycloak_admin_password: admin
+
+enmasse_template: "{{ role_path }}/files/templates/enmasse.yaml"
 
 enmasse_keycloak_client: enmasse-keycloak-client.jar
 
 keycloak_deployment: keycloak
 
-create_address_space: false
+create_address_space: true
 address_space_namespace: "{{ project_name }}"
 # brokered,standard
 address_space_type: brokered
-# none.standard
-address_space_auth_type: standard 
+# none,standard
+address_space_auth_type: standard
 address_space_name: "{{ address_space_type }}-default"
 address_space_plan: unlimited-{{ address_space_type }}
 
@@ -34,7 +42,7 @@ external_messaging_secret_name: external-certs-messaging
 # Example: [{"name":"user1","password":"user"},{"name":"user2","password":"user"}]
 address_space_users: [{ name: user1, password: user}]
 
-create_address: false
+create_address: true
 # Example: [{"name":"queue1","type":"queue","plan":"standard"},{"name":"queue2","type":"queue","plan":"standard"}]
 # Type: queue, topic, anycast, multicast
 # Plan: unlimited, inmemory, persisted, pooled-inmemory, pooled-persisted 

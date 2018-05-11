@@ -56,7 +56,7 @@
   changed_when: false
 
 - name: create resource definitions
-  shell: "{{ openshift_cli }} apply -f {{ role_path }}/files/templates/resource-definitions.yaml -n {{ project_name }}"
+  shell: "{{ openshift_cli }} apply -f {{ resource_definitions_template }} -n {{ project_name }}"
   when: resource_definitions_exist is failed
 
 # address space plans
@@ -68,7 +68,7 @@
   when: address_space_type == 'brokered'
 
 - name: create brokered address space plan
-  shell: "{{ openshift_cli }} apply -f {{ role_path }}/files/templates/brokered-plans.yaml -n {{ project_name }}"
+  shell: "{{ openshift_cli }} apply -f {{ brokered_address_space_plans_template }} -n {{ project_name }}"
   when: >
     (address_space_type == 'brokered') and
     (brokered_address_space_plan_exists is failed)
@@ -81,7 +81,7 @@
   when: address_space_type == 'standard'
 
 - name: create standard address space plan
-  shell: "{{ openshift_cli }} apply -f {{ role_path }}/files/templates/standard-plans.yaml -n {{ project_name }}"
+  shell: "{{ openshift_cli }} apply -f {{ standard_address_space_plans_template }} -n {{ project_name }}"
   when: >
     (address_space_type == 'standard') and
     (standard_address_space_plan_exists is failed)
@@ -126,7 +126,7 @@
   changed_when: false
 
 - name: deploy none-authservice
-  shell: "{{ openshift_cli }} process -f {{ role_path }}/files/templates/none-authservice.yaml | {{ openshift_cli }} create -f - -n {{ project_name }}"
+  shell: "{{ openshift_cli }} process -f {{ none_authservice_template }} | {{ openshift_cli }} create -f - -n {{ project_name }}"
   when: >
     (none_authservice_deployed is failed) and
     (none_authservice is defined and none_authservice|bool == true)
@@ -173,7 +173,7 @@
   changed_when: false
 
 - name: deploy standard-authservice
-  shell: "{{ openshift_cli }} process -f {{ role_path }}/files/templates/standard-authservice.yaml | {{ openshift_cli }} create -f - -n {{ project_name }}"
+  shell: "{{ openshift_cli }} process -f {{ standard_authservice_template }} | {{ openshift_cli }} create -f - -n {{ project_name }}"
   when: >
     (standard_authservice_deployed is failed) and
     (standard_authservice is defined and standard_authservice|bool == true)
@@ -211,7 +211,7 @@
   changed_when: false
 
 - name: install enmasse template
-  shell: "{{ openshift_cli}} process -f {{ role_path }}/files/templates/enmasse.yaml | {{ openshift_cli }} create -f - -n {{ project_name }}"
+  shell: "{{ openshift_cli}} process -f {{ enmasse_template }} | {{ openshift_cli }} create -f - -n {{ project_name }}"
   when: enmasse_template_exists is failed
 
 # external messaging certificate
